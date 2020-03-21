@@ -1,147 +1,143 @@
+"use strict";
 /**
- * @param {String} date
- * @returns {Object}
+ * @param {Array} collection
+ * @params {Function[]} – Функции для запроса
+ * @returns {Array}
  */
+function query(collection) {
 
-var data = new Date();
-const err = new TypeError('TypeError');
+    var list = {select:[], filterIn:[], properties: [], count: [0 , 0]}, out=[];
 
-
-module.exports = function (date) {
-
-    // change the recieved date into workable format
-    data = new Date(date);
-
-    return {
-        add: function(number,units){
-            if(mistake(number, units)) {
-                throw err;
-            }
-            adding(number, units);
-            return this;
-        },
-        subtract: function(number,units){
-            if(mistake(number, units)) {
-                throw err;
-            }
-            subing(number, units);
-            return this;
-        },
-        get value(){
-            return rightDate();
-        }      
+    // if no orders been given, return as is
+    if(arguments.length === 1){
+        return collection;
     }
 
+    // load the properties from the collection
+    list.properties = Object.keys(collection[0]);
+
+    //move the arguments to an array  
+    var command = [].slice.call(arguments);
+
+    //load the command values
+    for(let i=0; i < command.length ; i++){
+        if (command[i][0] === 'select'){
+            list.select = list.select.concat(command[i].slice(1));
+            list.count[0]++;
+        }
+        else if (command[i][0] === 'filterIn'){
+            list.filterIn = command[i].slice(1);
+            list.count[1]++;
+        }
+    }
+
+    //in case of crosssaction
+    if (list.count[0] > 1){
+        list.select = duplicate(list.select, list.count[0]);
+    }
+
+    if (list.select.length === 0){
+        return [];
+    }
+
+    if (list.count[1] > 1){
+        list.filterIn = duplicate(list.filterIn, list.count[1]);
+    }
+
+    if (list.filterIn.length === 0){
+        return [];
+    }
+
+    //filtering*********************************************
+    let index = 0;
+    for (let i=0; i < collection.length; i++){
+        
+        for(let j = 1; j < list.filterIn.length; j++){
+            if(collection[i][list.filterIn[0]] === list.filterIn[j]){
+                out[index] = collection[i];
+                index++;
+            }
+        }
+    }
+
+    out = selecting(list.select,list.properties, out);
+
+    return out;
+}
+
+/**
+ * @params {String[]}
+ */
+// select which properties from the list to show
+function select() {
+    var choice = ['select'];
+
+    for(let i=0; i < arguments.length; i++){
+        choice[i+1] = arguments[i];
+    }
+
+    return choice;
+}
+
+/**
+ * @param {String} property – Свойство для фильтрации
+ * @param {Array} values – Массив разрешённых значений
+ */
+// filter the list by one property and values from that property
+function filterIn(property, values) {
+    var send = ['filterIn'];
+    send[1] = property;
+
+    for (let i = 0; i < values.length ; i++){
+        send[i+2] = values[i];
+    }
+    return send;
+}
+
+
+function selecting(select,properties, out){
+
+        let del =[], index = 0;
+
+    for(let i=0; i < properties.length ; i++){ 
+        
+        if(select.indexOf(properties[i]) === -1){ //check if the selected properteis are in the collection
+            del[index] = properties[i];
+            index++;
+        }
+    }
+
+    for(let i=0; i < out.length; i++){
+        for(let j=0; j < del.length;j++){
+            delete out[i][del[j]];
+        }
+    }
+    return out;
+}
+
+//check for duplicate, returne the duplicate if there is one or the hole array if there is no
+function duplicate(list,count){ 
+    let dupl = [], copy = list.slice().sort();
+
+    for (let i = 0; i < copy.length - 1 ;i++){
+        if (copy[i+1]===copy[i]){
+            dupl.push(copy[i]);
+        }
+    }
+
+    if (dupl.length > 0 ){
+        return dupl;
+    }
+
+    if (dupl.length === 0 && count > 1){
+        return dupl;
+    }
+
+    return list;
+}
+
+module.exports = {
+    query: query,
+    select: select,
+    filterIn: filterIn
 };
-
-//check for error
-function mistake(number, units){
-    const validUnits = ',years,months,days,hours,minutes,seconds,milliseconds,';
-
-    // negative number or wrong units will call an error
-    if(number < 0 || validUnits.indexOf(','+units+",") === -1){
-        return true;
-    }
-    
-    return false;
-}
-
-//
-function adding(number, units){
-    switch(units){
-        case 'years':
-            var format = data.getFullYear();
-            data.setFullYear(format+number);
-            break;
-        case 'months':
-            var format = data.getMonth();
-            data.setMonth(format+number);
-            break;
-        case 'days':
-            var format = data.getDate();
-            data.setDate(format+number);
-            break;
-        case 'hours':
-            var format = data.getHours();
-            data.setHours(format+number);
-            break;
-        case 'minutes':
-            var format = data.getMinutes();
-            data.setMinutes(format+number);
-            break;
-        case 'seconds':
-            var format = data.getSeconds();
-            data.setSeconds(format+number);
-            break;
-        case 'milliseconds':
-            var format = data.getMilliseconds();
-            data.setMilliseconds(format+number);
-            break;
-    }
-}
-
-//
-function subing(number, units){
-    switch(units){
-        case 'years':
-            var format = data.getFullYear();
-            data.setFullYear(format-number);
-            break;
-        case 'months':
-            var format = data.getMonth();
-            data.setMonth(format-number);
-            break;
-        case 'days':
-            var format = data.getDate();
-            data.setDate(format-number);
-            break;
-        case 'hours':
-            var format = data.getHours();
-            data.setHours(format-number);
-            break;
-        case 'minutes':
-            var format = data.getMinutes();
-            data.setMinutes(format-number);
-            break;
-        case 'seconds':
-            var format = data.getSeconds();
-            data.setSeconds(format-number);
-            break;
-        case 'milliseconds':
-            var format = data.getMilliseconds();
-            data.setMilliseconds(format-number);
-            break;
-    }
-}
-
-//convert the date to the right date format
-function rightDate(){
-    var format = data.getFullYear()+"-", month = data.getMonth()+1;
-
-    // fix month if needed
-    if (month < 10){
-        format += "0"+month+"-" ;
-    }else{
-        format += month+"-" ;
-    }
-
-    //fix day if needed
-    if (data.getDate() < 10){
-        format += "0"+data.getDate()+" " ;
-    }else{
-        format += data.getDate()+" " ;
-    }
-
-    //fix hour if needed
-    if (data.getHours() < 10){
-        format += "0"+data.getHours()+":" ;
-    }else{
-        format += data.getHours()+":" ;
-    }
-
-    //fix minute if needed
-    if (data.getMinutes() < 10){
-        return format+"0"+data.getMinutes();
-    }
-    return format+data.getMinutes();
-}

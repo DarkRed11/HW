@@ -4,41 +4,79 @@
 var assert = require('assert');
 
 // Подключаем свою функцию
-var date = require('./index.js');
+var lib = require('./index.js');
 
-var time = date('2017-05-16 13:45')
-    .add(24, 'hours')
-    .subtract(1, 'months')
-    .add(3, 'days')
-    .add(15, 'minutes');
-assert.deepEqual(
-    time.value,
-    '2017-04-20 14:00',
-
-    'Если к дате "2017-05-16 13:45" ' +
-    'прибавить 24 часа, 3 дня и 15 минут, вычесть 1 месяц, ' +
-    'то получится "2017-04-20 14:00"'
-);
-
-// assert.throws принимает функцию и
-// проверяет, что она выбрасывает исключение определенного типа
-assert.throws(
-    function () {
-        date('2017-05-16 13:45').add(2, 'light-years');
+// Коллекция данных
+var friends = [
+    {
+        name: 'Сэм',
+        gender: 'Мужской',
+        email: 'luisazamora@example.com',
+        favoriteFruit: 'Картофель'
     },
-    TypeError,
-
-    'Если попытаться прибавить к дате световой год, ' +
-    'то выбросится исключение TypeError'
-);
-
-assert.throws(
-    function () {
-        date('2017-05-16 13:45').add(-2, 'years');
+    {
+        name: 'Эмили',
+        gender: 'Женский',
+        email: 'example@example.com',
+        favoriteFruit: 'Яблоко'
     },
-    TypeError,
-
-    'Если попытаться передать в функцию add отрицательное число – выбросится исключение TypeError'
+    {
+        name: 'Мэт',
+        gender: 'Мужской',
+        email: 'danamcgee@example.com',
+        favoriteFruit: 'Яблоко'
+    },
+    {
+        name: 'Брэд',
+        gender: 'Мужской',
+        email: 'newtonwilliams@example.com',
+        favoriteFruit: 'Банан'
+    },
+    {
+        name: 'Шерри',
+        gender: 'Женский',
+        email: 'danamcgee@example.com',
+        favoriteFruit: 'Картофель'
+    },
+    {
+        name: 'Керри',
+        gender: 'Женский',
+        email: 'danamcgee@example.com',
+        favoriteFruit: 'Апельсин'
+    },
+    {
+        name: 'Стелла',
+        gender: 'Женский',
+        email: 'waltersguzman@example.com',
+        favoriteFruit: 'Картофель'
+    }
+];
+/*
+// Выполняем выборку и фильтрацию с помощью нашего конструктора
+var result = lib.query(
+    friends,
+    lib.select('name', 'gender', 'email'),
+    lib.filterIn('favoriteFruit', ['Яблоко', 'Картофель'])
 );
+
+// Сравниваем полученный результат с ожидаемым
+assert.deepEqual(result, [
+    { name: 'Сэм', gender: 'Мужской', email: 'luisazamora@example.com' },
+    { name: 'Эмили', gender: 'Женский', email: 'example@example.com' },
+    { name: 'Мэт', gender: 'Мужской', email: 'danamcgee@example.com' },
+    { name: 'Шерри', gender: 'Женский', email: 'danamcgee@example.com' },
+    { name: 'Стелла', gender: 'Женский', email: 'waltersguzman@example.com' }
+]);
+*/
+// Выполняем выборку и фильтрацию с помощью нашего конструктора
+var result = lib.query(
+    friends,
+    lib.select('name', 'gender', 'email'),
+    lib.filterIn('favoriteFruit', ['Яблоко', 'Картофель']),
+    lib.filterIn('favoriteFruit', ['Апельсин', 'Банан'])
+);
+
+// Сравниваем полученный результат с ожидаемым
+assert.deepEqual(result, []);
 
 console.info('OK!');
